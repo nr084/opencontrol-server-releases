@@ -16,4 +16,4 @@ Tags identify the component and version, for example `server-v0.1.0` or `android
 - [Server sources](https://github.com/nr084/opencontrol-server)
 - [Canonical protocol library](https://github.com/nr084/opencontrol-protocol)
 
-For Ubuntu server packages, download the `.deb` and `SHA256SUMS` into the same directory and run `sha256sum -c SHA256SUMS` before installation. Checksums verify integrity; they are not a digital signature.
+For Ubuntu server packages, download the `.deb` and `SHA256SUMS` into the same directory and run `sha256sum --ignore-missing --strict -c SHA256SUMS` before installation. Checksums verify integrity; they are not a digital signature.
