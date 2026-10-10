@@ -4,19 +4,21 @@ Binary releases of the independent OpenControl project: VPN server and clients f
 
 ## Compatibility and independence
 
-OpenControl is designed for interoperability with compatible Kerio Control VPN clients. OpenControl Server 0.2.0 was tested with the unmodified Kerio Control VPN Client 9.6.1 (9306-p1) for Linux. Compatibility with other versions or products is not implied.
+OpenControl is designed for interoperability with compatible Kerio Control VPN clients. OpenControl Server 0.2.1 was tested with the unmodified Kerio Control VPN Client 9.6.1 (9306-p1) for Linux. Compatibility with other versions or products is not implied.
 
 **OpenControl is not a Kerio or GFI product and is not affiliated with, sponsored by, endorsed by, or supported by Kerio or GFI.** Kerio and GFI names identify interoperability targets only; trademarks belong to their respective owners. Third-party client binaries are not redistributed here.
 
 ## Как пользоваться сервером
 
-Текущая версия: **OpenControl Server 0.2.0** для Ubuntu 26.04, amd64/arm64.
+Текущая версия: **OpenControl Server 0.2.1** для Ubuntu 26.04, amd64/arm64.
 
-- [Скачать 0.2.0: пакеты, SHA256SUMS и результаты проверки](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.2.0).
+- [Скачать 0.2.1: пакеты, SHA256SUMS и результаты проверки](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.2.1).
 - [Полное руководство на русском](SERVER_GUIDE_RU.md): возможности, установка, сеть и сертификат, пользователи, служба, сессии, helper, статистика, обновление и удаление.
 - [Контракт JSON helper API v1](ADMIN_API.md).
 
 Пакет включает `opencontrold`, `opencontrolctl` и root-only `opencontrol-admin-helper`. Поддерживаются full/split IPv4, пользовательские политики, NAT, локальная автоматизация с CAS, журналы и устойчивые события завершённых сессий.
+
+Версия 0.2.1 добавляет клиентское семейство ОС, исходный VPN-wire код, очищенное название ОС и версию/build клиента в API активных сессий. Метаданные — самодекларация, они не участвуют в авторизации. API v1 и имена пакетов совместимы с предыдущим релизом.
 
 Установка не запускает службу и не включает forwarding. Версия — prerelease: Linux amd64 проверен с фирменным клиентом; arm64 проверен под QEMU, Android и физический ARM-сервер пока не проверены.
 

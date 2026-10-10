@@ -1,4 +1,4 @@
-# Local administration API v1 — OpenControl Server 0.2.0
+# Local administration API v1 — OpenControl Server 0.2.1
 
 `/usr/sbin/opencontrol-admin-helper` is a one-shot root-only executable. It accepts
 one UTF-8 JSON document through stdin and returns one JSON document through stdout.
@@ -167,3 +167,22 @@ For external transparent routing, set NAT false and provision routing/marks/DNS
 and fail-closed rules externally. OpenControl touches only its own nft table and
 does not bypass user policy. Server is IPv4-only; clients must address IPv6 bypass
 themselves. Compatibility is limited to tested client versions/platforms.
+
+## Client metadata (0.2.1)
+
+Live sessions (`sessions`, CLI `session show`, typed helper `sessions`) add
+`client_os_family` (`windows`, `linux`, `macos`, `unknown`), `client_os_name`
+(string/null), `client_os_code` (raw uint32/null), `client_metadata_available`
+(bool), `client_version` (dotted major.minor.patch/null), `client_build` (uint16/null).
+VPN-wire codes 1/2/3 map to Windows/Linux/macOS; these are not webadmin enum codes.
+For wire v1/v2 or absent metadata all nullable fields are null, family is unknown,
+and availability is false. Unknown wire codes retain the raw code and declared
+name but family is unknown; no OS is inferred or substituted. Availability denotes
+the metadata block's presence, not trust or the validity of its text.
+
+The description is stopped at its first NUL, decoded with UTF-8 replacement,
+stripped of control and bidirectional formatting characters and limited to 128
+UTF-8 bytes at a character boundary; empty sanitized text is null. Client product
+version and build are independent of the OS description. Render all supplied text
+as escaped plain text. These fields are self-declared and must never authorize
+access. Close events remain unchanged. API version remains 1.
