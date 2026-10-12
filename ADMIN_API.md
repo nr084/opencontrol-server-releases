@@ -1,5 +1,7 @@
 # Local administration API v1 — OpenControl Server 0.2.1
 
+[Русский](ADMIN_API_RU.md) | **English**
+
 `/usr/sbin/opencontrol-admin-helper` is a one-shot root-only executable. It accepts
 one UTF-8 JSON document through stdin and returns one JSON document through stdout.
 It takes no arguments, accepts no environment password/path overrides and starts

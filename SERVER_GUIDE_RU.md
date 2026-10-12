@@ -1,5 +1,7 @@
 # OpenControl Server 0.2.1: руководство администратора
 
+**Русский** | [English](SERVER_GUIDE_EN.md)
+
 IPv4 VPN-сервер для Ubuntu Server 26.04 LTS, amd64 и arm64. Реализует совместимость с проверенными клиентами Kerio Control VPN.
 
 **OpenControl — независимый проект. Он не является продуктом Kerio / GFI, не связан с этими компаниями, не спонсируется, не одобрен и не поддерживается ими.** Названия используются только для обозначения совместимости; права на торговые марки принадлежат их владельцам. Фирменные клиентские бинарники не распространяются.
@@ -176,7 +178,7 @@ printf '%s' '{"api_version":1,"request_id":"ready-1","operation":"readiness"}' |
 
 `sudo -n` требует уже разрешённого неинтерактивного root-доступа; оно не запрашивает пароль. Не выдавайте недоверенным пользователям доступ к helper: он разрешает менять весь реестр.
 
-Операции: `version`, `users.list/get/create/update/password/delete/apply`, `config.get/validate/apply`, `readiness`, `sessions`, `session.disconnect`, `events.read`. Полный формат — в [ADMIN_API.md](ADMIN_API.md).
+Операции: `version`, `users.list/get/create/update/password/delete/apply`, `config.get/validate/apply`, `readiness`, `sessions`, `session.disconnect`, `events.read`. Полный формат — в [API на русском](ADMIN_API_RU.md).
 
 Алгоритм записи: прочитать `revision`, передать её как `expected_revision`, проверить `ok`, `saved`, `applied` и `applied_revision`. При `REVISION_CONFLICT` перечитать данные. `request_id` не обеспечивает идемпотентность: после timeout не повторять запись вслепую.
 
