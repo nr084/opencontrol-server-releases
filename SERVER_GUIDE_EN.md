@@ -1,4 +1,4 @@
-# OpenControl Server 0.2.1 — administrator guide
+# OpenControl Server 0.2.2 — administrator guide
 
 [Русский](SERVER_GUIDE_RU.md) | **English**
 
@@ -6,7 +6,7 @@ An IPv4 VPN server for Ubuntu Server 26.04 LTS, amd64 and arm64, interoperating 
 
 **OpenControl is an independent project. It is not a Kerio / GFI product and is not affiliated with, sponsored by, endorsed by, or supported by Kerio / GFI.** Names identify interoperability targets only; trademarks belong to their owners. No proprietary client binaries are distributed.
 
-Version 0.2.1 is a prerelease. The unmodified Kerio Control VPN Client 9.6.1 (9306-p1) for Linux was tested on Ubuntu amd64. ARM64 builds and affected tests use QEMU; native ARM hardware and Android acceptance remain pending. Other client versions are not implied to be compatible.
+Version 0.2.2 is a prerelease. The unmodified Kerio Control VPN Client 9.6.1 (9306-p1) for Linux was tested on Ubuntu amd64. ARM64 builds and affected tests use QEMU; native ARM hardware and Android acceptance remain pending. Other client versions are not implied to be compatible.
 
 ## Capabilities
 
@@ -25,18 +25,18 @@ IPv6 bypass must be handled by the operator/client. Client metadata is self-decl
 
 Use Ubuntu Server 26.04 with systemd, `/dev/net/tun` and network/nftables permissions. Containers require operator-provided TUN access and network privileges.
 
-Download the architecture-specific package and SHA256SUMS from [release 0.2.1](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.2.1), or run:
+Download the architecture-specific package and SHA256SUMS from [release 0.2.2](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.2.2), or run:
 
 ```sh
 sudo apt update
 sudo apt install ca-certificates curl
 arch=$(dpkg --print-architecture)
 case "$arch" in amd64|arm64) ;; *) echo 'Unsupported architecture'; exit 1 ;; esac
-base=https://github.com/nr084/opencontrol-server-releases/releases/download/server-v0.2.1
-curl -fLO "$base/opencontrol-server_0.2.1_${arch}.deb"
+base=https://github.com/nr084/opencontrol-server-releases/releases/download/server-v0.2.2
+curl -fLO "$base/opencontrol-server_0.2.2_${arch}.deb"
 curl -fLO "$base/SHA256SUMS"
-grep "  opencontrol-server_0.2.1_${arch}.deb$" SHA256SUMS | sha256sum -c -
-sudo apt install "./opencontrol-server_0.2.1_${arch}.deb"
+grep "  opencontrol-server_0.2.2_${arch}.deb$" SHA256SUMS | sha256sum -c -
+sudo apt install "./opencontrol-server_0.2.2_${arch}.deb"
 ```
 
 Continue only after checksum verification succeeds. Checksums verify integrity, not an independent publisher signature. Installation creates service accounts, protected configuration and a self-signed certificate if no certificate/key exists. It does not start the service or enable global forwarding.
@@ -205,4 +205,14 @@ Delete the `opencontrol` user and `opencontrol`/`opencontrol-admin` groups separ
 5. For an active session without traffic, check forwarding, DNS, firewall FORWARD, NAT/return routes and allowed routes.
 6. For saved but unapplied changes, compare revisions/readiness and restart requirements.
 
-See [diagnostics](https://github.com/nr084/opencontrol-server/blob/v0.2.1/server/DIAGNOSTICS.md), [security](https://github.com/nr084/opencontrol-server/blob/v0.2.1/server/SECURITY.md), and [changelog](https://github.com/nr084/opencontrol-server/blob/v0.2.1/server/CHANGELOG.md).
+See [diagnostics](https://github.com/nr084/opencontrol-server/blob/v0.2.2/server/DIAGNOSTICS.md), [security](https://github.com/nr084/opencontrol-server/blob/v0.2.2/server/SECURITY.md), and [changelog](https://github.com/nr084/opencontrol-server/blob/v0.2.2/server/CHANGELOG.md).
+
+## ROUTES maintenance (0.2.2)
+
+The server uses canonical opencontrol-protocol 0.2.0. Each complete advertisement
+starts and finishes replacement maintenance: flags 3 for split/explicit user routes,
+11 for default-covering full mode. Empty lists are valid. Every 600 seconds an
+Active session receives the same initial snapshot, including during rekey. This
+does not reconnect the client, reset keys or refresh advertised user routes; policy
+enforcement still updates live and route advertisement changes require reconnect.
+TLS, authentication/MFA handling and the rekey algorithm are unchanged.
