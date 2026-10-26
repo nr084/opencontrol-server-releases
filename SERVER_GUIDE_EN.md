@@ -1,12 +1,12 @@
-# OpenControl Server 0.2.2 — administrator guide
+# OpenControl Server 0.9.0 — administrator guide
 
-[Русский](SERVER_GUIDE_RU.md) | **English**
+[Русский](USAGE_RU.md) | **English**
 
 An IPv4 VPN server for Ubuntu Server 26.04 LTS, amd64 and arm64, interoperating with tested Kerio Control VPN clients.
 
 **OpenControl is an independent project. It is not a Kerio / GFI product and is not affiliated with, sponsored by, endorsed by, or supported by Kerio / GFI.** Names identify interoperability targets only; trademarks belong to their owners. No proprietary client binaries are distributed.
 
-Version 0.2.2 is a prerelease. The unmodified Kerio Control VPN Client 9.6.1 (9306-p1) for Linux was tested on Ubuntu amd64. ARM64 builds and affected tests use QEMU; native ARM hardware and Android acceptance remain pending. Other client versions are not implied to be compatible.
+Version 0.9.0 is a prerelease. The unmodified Kerio Control VPN Client 9.6.1 (9306-p1) for Linux was tested on Ubuntu amd64. ARM64 builds and affected tests use QEMU; native ARM hardware and Android acceptance remain pending. Other client versions are not implied to be compatible.
 
 ## Capabilities
 
@@ -25,18 +25,18 @@ IPv6 bypass must be handled by the operator/client. Client metadata is self-decl
 
 Use Ubuntu Server 26.04 with systemd, `/dev/net/tun` and network/nftables permissions. Containers require operator-provided TUN access and network privileges.
 
-Download the architecture-specific package and SHA256SUMS from [release 0.2.2](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.2.2), or run:
+Download the architecture-specific package and SHA256SUMS from [release 0.9.0](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.9.0), or run:
 
 ```sh
 sudo apt update
 sudo apt install ca-certificates curl
 arch=$(dpkg --print-architecture)
 case "$arch" in amd64|arm64) ;; *) echo 'Unsupported architecture'; exit 1 ;; esac
-base=https://github.com/nr084/opencontrol-server-releases/releases/download/server-v0.2.2
-curl -fLO "$base/opencontrol-server_0.2.2_${arch}.deb"
+base=https://github.com/nr084/opencontrol-server-releases/releases/download/server-v0.9.0
+curl -fLO "$base/opencontrol-server_0.9.0_${arch}.deb"
 curl -fLO "$base/SHA256SUMS"
-grep "  opencontrol-server_0.2.2_${arch}.deb$" SHA256SUMS | sha256sum -c -
-sudo apt install "./opencontrol-server_0.2.2_${arch}.deb"
+grep "  opencontrol-server_0.9.0_${arch}.deb$" SHA256SUMS | sha256sum -c -
+sudo apt install "./opencontrol-server_0.9.0_${arch}.deb"
 ```
 
 Continue only after checksum verification succeeds. Checksums verify integrity, not an independent publisher signature. Installation creates service accounts, protected configuration and a self-signed certificate if no certificate/key exists. It does not start the service or enable global forwarding.
@@ -205,14 +205,48 @@ Delete the `opencontrol` user and `opencontrol`/`opencontrol-admin` groups separ
 5. For an active session without traffic, check forwarding, DNS, firewall FORWARD, NAT/return routes and allowed routes.
 6. For saved but unapplied changes, compare revisions/readiness and restart requirements.
 
-See [diagnostics](https://github.com/nr084/opencontrol-server/blob/v0.2.2/server/DIAGNOSTICS.md), [security](https://github.com/nr084/opencontrol-server/blob/v0.2.2/server/SECURITY.md), and [changelog](https://github.com/nr084/opencontrol-server/blob/v0.2.2/server/CHANGELOG.md).
+See [diagnostics](https://github.com/nr084/opencontrol-server/blob/v0.9.0/server/DIAGNOSTICS.md), [security](https://github.com/nr084/opencontrol-server/blob/v0.9.0/server/SECURITY.md), and [changelog](https://github.com/nr084/opencontrol-server/blob/v0.9.0/server/CHANGELOG.md).
 
-## ROUTES maintenance (0.2.2)
+## ROUTES maintenance (0.9.0)
 
-The server uses canonical opencontrol-protocol 0.2.0. Each complete advertisement
-starts and finishes replacement maintenance: flags 3 for split/explicit user routes,
-11 for default-covering full mode. Empty lists are valid. Every 600 seconds an
+The server uses canonical opencontrol-protocol 0.9.0. Each complete advertisement starts and finishes replacement maintenance. Single-frame snapshots use flags 3 for split/explicit user routes or 11 for default-covering full mode. Larger lists use canonical START-first/END-last batches with up to 255 records per frame and 4096 aggregate entries. Empty lists are valid; safeLan remains status only. Every 600 seconds an
 Active session receives the same initial snapshot, including during rekey. This
 does not reconnect the client, reset keys or refresh advertised user routes; policy
 enforcement still updates live and route advertisement changes require reconnect.
 TLS, authentication/MFA handling and the rekey algorithm are unchanged.
+
+## Explicit legacy compatibility (0.9.0)
+
+AES-128-GCM remains normal operation. The package compiles library feature `legacy`,
+but both the default and old configurations deny legacy unless explicitly enabled:
+
+```toml
+[security]
+allow_legacy = false
+```
+
+To opt in, change this value to true in `/etc/opencontrol/opencontrol.toml`, then
+run `sudo opencontrolctl config check` and `sudo opencontrolctl reload`. The typed
+helper exposes the same persisted value as `config.get.result.limits.allow_legacy`;
+apply the complete safe config with CAS. This setting reloads live, no restart is
+needed. It never selects a TLS ciphersuite or retries a failed AES session as legacy.
+Disabled handshakes receive canonical typed INVALID_REQUEST (opcode 21; opaque
+payload, not a made-up local error code). AES remains accepted in either setting.
+
+Setting false immediately cancels keys/data for sessions retaining any legacy
+generation, including a session that switched to AES but still retained a legacy
+receive slot. Control/socket close is bounded (5-second TLS shutdown; in-flight
+writes also have fixed timeouts), then durable close accounting and IP/peer cleanup
+run. Close reason: `legacy_disabled`. AES-only sessions stay connected. Admission
+and rekey recheck current policy. Enabling applies to new connections; an in-flight
+handshake with a captured disabled policy may be refused and should reconnect.
+
+`udp_cipher`, `udp_integrity` and `legacy_material_present` describe session data
+protection. Legacy is Blowfish counter-mode, with unkeyed checksum (wire2–4) or no
+integrity (wire1); neither is authenticated GCM. Metadata cannot enable it.
+
+The product listener is username/password ClientServer(Role::Server), not a
+certificate-selected S2S service. Client/server and S2S initiator/acceptor coordinator
+contracts are tested separately. These tests do not claim product S2S routing,
+certificate provisioning or live S2S interoperability. New-version acceptance is
+separate from historical library/server evidence.

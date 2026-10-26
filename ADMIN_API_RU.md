@@ -1,4 +1,4 @@
-# Локальный административный API v1 — OpenControl Server 0.2.2
+# Локальный административный API v1 — OpenControl Server 0.9.0
 
 **Русский** | [English](ADMIN_API.md)
 
@@ -55,7 +55,7 @@ Patch: отсутствует — оставить; null — наследова�
 
 Разрешены `listen_address`, общий TCP/UDP `port`, `vpn` (сеть/интерфейс/адрес/пул/маршруты/DNS/NAT), `limits`, `logging_level`. Начинайте с `config.get`, не конструируйте неполный объект. TLS paths/profile, users/socket paths, публичность метрик и systemd definitions через API не меняются.
 
-Пользователи и логирование reload live. Listener/network/routes/DNS/limits требуют restart и возвращают `result.restart_required:true`. При `restart:false` настройки остаются сохранёнными и pending; при true перезапускается только фиксированная `opencontrol.service`. Успех требует ожидаемой ревизии, новой instance, readiness и совпадения systemd MainPID. Отдельных операций start/stop/enable/disable нет.
+Пользователи, логирование и разрешение legacy reload live. Listener/network/routes/DNS/limits требуют restart и возвращают `result.restart_required:true`. При `restart:false` настройки остаются сохранёнными и pending; при true перезапускается только фиксированная `opencontrol.service`. Успех требует ожидаемой ревизии, новой instance, readiness и совпадения systemd MainPID. Отдельных операций start/stop/enable/disable нет.
 
 Перед изменением сохраняется защищённый `/etc/opencontrol/opencontrol.toml.rollback`. Неудачный restart пытается CAS-защищённое восстановление и restart; `result.rollback_verified` показывает проверенный результат, `backup_retained` — наличие recovery data. Более новая конкурентная ревизия не перезаписывается; пользователи и сертификат/ключ не сбрасываются.
 
@@ -97,3 +97,39 @@ Committed events переживают restart/SIGKILL. Live counters наход�
 Свежий шаблон — full IPv4 и NAT, `outbound_interface="auto"` выбирает интерфейс реального IPv4-маршрута. Forwarding включает оператор; stop не выключает общий forwarding. Проверьте DNS и доверие сертификату. Пакетное обновление сохраняет operator conffiles.
 
 Для внешней прозрачной маршрутизации отключите собственный NAT и отдельно обеспечьте routing/marks/DNS/fail-closed правила. OpenControl касается только своей nft table и не обходит пользовательские политики. Сервер IPv4-only; IPv6 bypass контролируется отдельно. Совместимость ограничена проверенными версиями/платформами.
+
+## Явное разрешение legacy (0.9.0)
+
+Штатный режим — AES-128-GCM. В пакете собрана feature `legacy`, но runtime-разрешение
+по умолчанию выключено, в том числе при обновлении старой конфигурации:
+
+```toml
+[security]
+allow_legacy = false
+```
+
+Чтобы явно разрешить legacy, измените значение на true в
+`/etc/opencontrol/opencontrol.toml`, выполните `sudo opencontrolctl config check`
+и `sudo opencontrolctl reload`. В typed helper это сохраняемое поле
+`config.get.result.limits.allow_legacy`: применяйте полный config через CAS.
+Перезапуск не нужен. Настройка не меняет TLS ciphersuite и не включает downgrade
+после ошибки AES. Запрещённый handshake получает канонический typed INVALID_REQUEST
+(opcode 21 с opaque payload, а не выдуманный локальный код). AES разрешён всегда.
+
+При возврате false немедленно отменяются ключи/передача сессий с любым сохранённым
+legacy-поколением, даже если текущий передатчик уже перешёл на AES, но старый
+legacy receive slot сохранён. Завершение control/socket ограничено по времени
+(TLS shutdown 5 секунд; у текущих записей также фиксированные timeout), затем
+сохраняется close event и освобождаются IP/peer. Причина: `legacy_disabled`.
+AES-only сессии продолжают работу. Admission и rekey проверяют текущую настройку.
+Включение применяется к новым соединениям; handshake, начавшийся с запретом,
+может получить отказ и должен переподключиться.
+
+`udp_cipher`, `udp_integrity`, `legacy_material_present` описывают именно UDP.
+Legacy — Blowfish counter-mode: wire2–4 имеет unkeyed checksum, wire1 — no integrity.
+Это не authenticated GCM. Метаданные клиента не дают права включить legacy.
+
+Продуктовый listener — ClientServer(Role::Server) с логином/паролем, не S2S-сервис
+с выбором роли по сертификату. Контракты client/server и S2S initiator/acceptor
+проверяются отдельно; эти тесты не подтверждают продуктовую S2S-маршрутизацию,
+настройку сертификатов или live S2S interop. Результаты 0.9.0 отделены от истории.

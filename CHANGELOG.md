@@ -2,6 +2,16 @@
 
 [Русский](CHANGELOG_RU.md) | **English**
 
+## 0.9.0 — 2026-10-26
+
+- Pin Protocol Library =0.9.0 / cacf1a738e5013922ca9678d529d014fffc22d11 with the legacy build feature and runtime LegacyPolicy.
+- Delegate session epochs, key generations, ACK barriers, same-slot peer replacement and independent liveness to ProtocolSession; bounded transport close drops key/binding state.
+- Persist security.allow_legacy (default false), expose limits.allow_legacy in API v1 and reload live. Revoking permission closes sessions retaining any legacy key generation; AES-only sessions continue.
+- Refuse disabled legacy through typed INVALID_REQUEST, without numeric local error enums, downgrade or TLS ciphersuite selection.
+- Use canonical advertisement_batches for full/empty/segmented/repeated ROUTES. Never suppress retransmission on Unchanged; safeLan remains status, not firewall policy.
+- Separate ordinary server/client profile tests from S2S initiator/acceptor contract tests; S2S is not an enabled product listener.
+- Report UDP cipher/integrity separately from TLS. Legacy checksum/no-integrity is never described as authenticated GCM.
+
 ## 0.2.2 — 2026-10-13
 
 - Pin opencontrol-protocol =0.2.0 and submodule commit 35a5c848fb2a25a64da36268026906ce3757b974; keep wire semantics in the library.

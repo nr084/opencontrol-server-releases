@@ -1,4 +1,4 @@
-# Local administration API v1 — OpenControl Server 0.2.2
+# Local administration API v1 — OpenControl Server 0.9.0
 
 [Русский](ADMIN_API_RU.md) | **English**
 
@@ -106,7 +106,7 @@ address/pool/routing/DNS/NAT), `limits`, `logging_level`. Fetch config.get rathe
 than constructing incomplete objects. TLS paths/profile, users/socket paths,
 metrics exposure and systemd definitions cannot be changed through this API.
 
-Only user policies and logging reload live. Listener/network/routes/DNS/limits
+User policies, logging and legacy permission reload live. Listener/network/routes/DNS/limits
 changes return `result.restart_required:true`. With restart false, they remain
 saved and pending. With restart true, only the fixed `opencontrol.service` is
 restarted. Success requires matching revision, new instance, readiness and
@@ -188,3 +188,39 @@ UTF-8 bytes at a character boundary; empty sanitized text is null. Client produc
 version and build are independent of the OS description. Render all supplied text
 as escaped plain text. These fields are self-declared and must never authorize
 access. Close events remain unchanged. API version remains 1.
+
+## Explicit legacy compatibility (0.9.0)
+
+AES-128-GCM remains normal operation. The package compiles library feature `legacy`,
+but both the default and old configurations deny legacy unless explicitly enabled:
+
+```toml
+[security]
+allow_legacy = false
+```
+
+To opt in, change this value to true in `/etc/opencontrol/opencontrol.toml`, then
+run `sudo opencontrolctl config check` and `sudo opencontrolctl reload`. The typed
+helper exposes the same persisted value as `config.get.result.limits.allow_legacy`;
+apply the complete safe config with CAS. This setting reloads live, no restart is
+needed. It never selects a TLS ciphersuite or retries a failed AES session as legacy.
+Disabled handshakes receive canonical typed INVALID_REQUEST (opcode 21; opaque
+payload, not a made-up local error code). AES remains accepted in either setting.
+
+Setting false immediately cancels keys/data for sessions retaining any legacy
+generation, including a session that switched to AES but still retained a legacy
+receive slot. Control/socket close is bounded (5-second TLS shutdown; in-flight
+writes also have fixed timeouts), then durable close accounting and IP/peer cleanup
+run. Close reason: `legacy_disabled`. AES-only sessions stay connected. Admission
+and rekey recheck current policy. Enabling applies to new connections; an in-flight
+handshake with a captured disabled policy may be refused and should reconnect.
+
+`udp_cipher`, `udp_integrity` and `legacy_material_present` describe session data
+protection. Legacy is Blowfish counter-mode, with unkeyed checksum (wire2–4) or no
+integrity (wire1); neither is authenticated GCM. Metadata cannot enable it.
+
+The product listener is username/password ClientServer(Role::Server), not a
+certificate-selected S2S service. Client/server and S2S initiator/acceptor coordinator
+contracts are tested separately. These tests do not claim product S2S routing,
+certificate provisioning or live S2S interoperability. New-version acceptance is
+separate from historical library/server evidence.

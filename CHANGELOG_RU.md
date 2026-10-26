@@ -2,6 +2,16 @@
 
 **Русский** | [English](CHANGELOG.md)
 
+## 0.9.0 — 2026-10-26
+
+- Точный pin библиотеки =0.9.0, commit cacf1a738e5013922ca9678d529d014fffc22d11. Включены feature legacy и обязательная runtime LegacyPolicy.
+- Session epochs, generations, ACK-барьер, замена текущего слота peer и раздельная liveness делегированы ProtocolSession; завершение транспорта ограничено по времени.
+- Сохраняемая security.allow_legacy выключена по умолчанию; доступна как limits.allow_legacy в API v1 и применяется reload. Отключение завершает сессии с любым сохранённым legacy-поколением ключей; AES-only продолжают работу.
+- Запрещённый legacy отклоняется typed INVALID_REQUEST. Нет выдуманных локальных wire-кодов, автоматического downgrade и зависимости от TLS ciphersuite.
+- ROUTES отправляются через advertisement_batches, включая START/END, пустые/многочастные/повторные снимки. Unchanged не подавляет повтор; safeLan не включает firewall.
+- Проверки обычной роли сервера отделены от S2S initiator/acceptor; продуктовый S2S listener не включён.
+- UDP cipher/integrity выводятся отдельно от TLS. Legacy checksum/no-integrity не приравниваются к GCM.
+
 ## 0.2.2 — 2026-10-13
 
 - Обновлена каноническая библиотека до точного `opencontrol-protocol =0.2.0`, submodule commit `35a5c848fb2a25a64da36268026906ce3757b974`. Wire semantics остаётся в библиотеке.

@@ -1,12 +1,12 @@
-# OpenControl Server 0.2.2: руководство администратора
+# OpenControl Server 0.9.0: руководство администратора
 
-**Русский** | [English](SERVER_GUIDE_EN.md)
+**Русский** | [English](USAGE_EN.md)
 
 IPv4 VPN-сервер для Ubuntu Server 26.04 LTS, amd64 и arm64. Реализует совместимость с проверенными клиентами Kerio Control VPN.
 
 **OpenControl — независимый проект. Он не является продуктом Kerio / GFI, не связан с этими компаниями, не спонсируется, не одобрен и не поддерживается ими.** Названия используются только для обозначения совместимости; права на торговые марки принадлежат их владельцам. Фирменные клиентские бинарники не распространяются.
 
-Версия 0.2.2 опубликована как prerelease. На Ubuntu amd64 проверен неизменённый Kerio Control VPN Client 9.6.1 (9306-p1) для Linux. ARM64 сборки и затронутые тесты проверены под QEMU; проверка на физическом ARM-сервере и Android пока не выполнена. Совместимость с другими версиями клиентов не гарантируется.
+Версия 0.9.0 опубликована как prerelease. На Ubuntu amd64 проверен неизменённый Kerio Control VPN Client 9.6.1 (9306-p1) для Linux. ARM64 сборки и затронутые тесты проверены под QEMU; проверка на физическом ARM-сервере и Android пока не выполнена. Совместимость с другими версиями клиентов не гарантируется.
 
 ## Возможности
 
@@ -26,18 +26,18 @@ IPv4 VPN-сервер для Ubuntu Server 26.04 LTS, amd64 и arm64. Реали
 
 Нужен Ubuntu Server 26.04 с systemd, `/dev/net/tun` и возможностью управлять сетью/nftables. В контейнере доступ к TUN и сетевые полномочия предоставляет оператор.
 
-Скачайте `.deb` нужной архитектуры и `SHA256SUMS` из [релиза 0.2.2](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.2.2). Либо выполните:
+Скачайте `.deb` нужной архитектуры и `SHA256SUMS` из [релиза 0.9.0](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.9.0). Либо выполните:
 
 ```sh
 sudo apt update
 sudo apt install ca-certificates curl
 arch=$(dpkg --print-architecture)
 case "$arch" in amd64|arm64) ;; *) echo 'Unsupported architecture'; exit 1 ;; esac
-base=https://github.com/nr084/opencontrol-server-releases/releases/download/server-v0.2.2
-curl -fLO "$base/opencontrol-server_0.2.2_${arch}.deb"
+base=https://github.com/nr084/opencontrol-server-releases/releases/download/server-v0.9.0
+curl -fLO "$base/opencontrol-server_0.9.0_${arch}.deb"
 curl -fLO "$base/SHA256SUMS"
-grep "  opencontrol-server_0.2.2_${arch}.deb$" SHA256SUMS | sha256sum -c -
-sudo apt install "./opencontrol-server_0.2.2_${arch}.deb"
+grep "  opencontrol-server_0.9.0_${arch}.deb$" SHA256SUMS | sha256sum -c -
+sudo apt install "./opencontrol-server_0.9.0_${arch}.deb"
 ```
 
 Продолжайте только после успешной проверки SHA256. Команды ниже относятся к установленному серверу. Установка создаёт служебные учётные записи, конфигурацию и самоподписанный сертификат, если сертификата и ключа ещё нет. Служба автоматически не запускается; forwarding не включается.
@@ -254,7 +254,7 @@ sudo rm -rf -- /etc/opencontrol /var/lib/opencontrol
 5. Если сессия есть, но трафика нет: forwarding, DNS, firewall FORWARD, NAT/return routes и пользовательские allowed routes.
 6. Если settings сохранены, но не применены: сравните saved/applied revision, readiness и необходимость restart.
 
-Подробнее: [DIAGNOSTICS.md](https://github.com/nr084/opencontrol-server/blob/v0.2.2/server/DIAGNOSTICS.md), [SECURITY.md](https://github.com/nr084/opencontrol-server/blob/v0.2.2/server/SECURITY.md), [CHANGELOG.md](https://github.com/nr084/opencontrol-server/blob/v0.2.2/server/CHANGELOG.md).
+Подробнее: [DIAGNOSTICS.md](https://github.com/nr084/opencontrol-server/blob/v0.9.0/server/DIAGNOSTICS.md), [SECURITY.md](https://github.com/nr084/opencontrol-server/blob/v0.9.0/server/SECURITY.md), [CHANGELOG.md](https://github.com/nr084/opencontrol-server/blob/v0.9.0/server/CHANGELOG.md).
 
 ## ОС подключённого клиента (0.2.1)
 
@@ -267,12 +267,45 @@ sudo rm -rf -- /etc/opencontrol /var/lib/opencontrol
 метаданных дают unknown/null. Неизвестный код не превращается в известное семейство.
 Это самодекларация клиента, не подтверждение ОС и не основание авторизации.
 
-## ROUTES maintenance (0.2.2)
+## ROUTES maintenance (0.9.0)
 
-Сервер использует каноническую библиотеку opencontrol-protocol 0.2.0. Полный
-снимок начинает и завершает replacement maintenance: flags 3 для split/явных
-маршрутов пользователя, 11 для full с default-covering routes. Пустые списки
-допустимы. В Active каждые 600 секунд повторяется исходный снимок, в том числе
+Сервер использует каноническую библиотеку opencontrol-protocol 0.9.0. Полный снимок начинает и завершает replacement maintenance. Один frame использует flags 3 для split/явных маршрутов или 11 для full. Большие списки разбиваются канонической библиотекой: START в первом, END в последнем, до 255 записей/frame и 4096 aggregate entries. Пустые списки допустимы, safeLan остаётся только статусом. В Active каждые 600 секунд повторяется исходный снимок, в том числе
 при rekey. Это не вызывает reconnect, сброс ключей или обновление объявленных
 пользовательских маршрутов: enforcement меняется live, объявление — при reconnect.
 TLS, аутентификация/MFA handling и алгоритм rekey не изменены.
+
+## Явное разрешение legacy (0.9.0)
+
+Штатный режим — AES-128-GCM. В пакете собрана feature `legacy`, но runtime-разрешение
+по умолчанию выключено, в том числе при обновлении старой конфигурации:
+
+```toml
+[security]
+allow_legacy = false
+```
+
+Чтобы явно разрешить legacy, измените значение на true в
+`/etc/opencontrol/opencontrol.toml`, выполните `sudo opencontrolctl config check`
+и `sudo opencontrolctl reload`. В typed helper это сохраняемое поле
+`config.get.result.limits.allow_legacy`: применяйте полный config через CAS.
+Перезапуск не нужен. Настройка не меняет TLS ciphersuite и не включает downgrade
+после ошибки AES. Запрещённый handshake получает канонический typed INVALID_REQUEST
+(opcode 21 с opaque payload, а не выдуманный локальный код). AES разрешён всегда.
+
+При возврате false немедленно отменяются ключи/передача сессий с любым сохранённым
+legacy-поколением, даже если текущий передатчик уже перешёл на AES, но старый
+legacy receive slot сохранён. Завершение control/socket ограничено по времени
+(TLS shutdown 5 секунд; у текущих записей также фиксированные timeout), затем
+сохраняется close event и освобождаются IP/peer. Причина: `legacy_disabled`.
+AES-only сессии продолжают работу. Admission и rekey проверяют текущую настройку.
+Включение применяется к новым соединениям; handshake, начавшийся с запретом,
+может получить отказ и должен переподключиться.
+
+`udp_cipher`, `udp_integrity`, `legacy_material_present` описывают именно UDP.
+Legacy — Blowfish counter-mode: wire2–4 имеет unkeyed checksum, wire1 — no integrity.
+Это не authenticated GCM. Метаданные клиента не дают права включить legacy.
+
+Продуктовый listener — ClientServer(Role::Server) с логином/паролем, не S2S-сервис
+с выбором роли по сертификату. Контракты client/server и S2S initiator/acceptor
+проверяются отдельно; эти тесты не подтверждают продуктовую S2S-маршрутизацию,
+настройку сертификатов или live S2S interop. Результаты 0.9.0 отделены от истории.
