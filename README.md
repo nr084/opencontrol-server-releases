@@ -2,7 +2,7 @@
 
 **[Русский](README_RU.md) · [English](README_EN.md)**
 
-[OpenControl Server 0.9.0](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.9.0) · Ubuntu 26.04 · amd64 / arm64 · API v1
+[OpenControl Server 0.9.1](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.9.1) · Ubuntu 26.04 · amd64 / arm64 · API v1
 
 ## Русский
 
@@ -13,9 +13,9 @@
 - [Описание проекта](README_RU.md).
 - [Руководство: установка, управление, обновление и удаление](SERVER_GUIDE_RU.md).
 - [Административный API](ADMIN_API_RU.md).
-- [Скачать пакеты и SHA256SUMS](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.9.0).
+- [Скачать пакеты и SHA256SUMS](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.9.1).
 
-Релиз — prerelease. amd64 проверен с фирменным Linux-клиентом; arm64 — под QEMU. Android и физический ARM-сервер пока не проверены. Установка не запускает службу автоматически.
+Версия 0.9.1 пересобрана на Rust 1.100.0 и выпущена как prerelease. Проверка с фирменным Linux-клиентом выполнена на 0.9.0. ARM64 тестируется под QEMU. Android и физический ARM-сервер пока не проверены. Установка не запускает службу автоматически.
 
 ## English
 
@@ -26,6 +26,6 @@ An independent IPv4 VPN server interoperating with tested Kerio Control VPN clie
 - [Project overview](README_EN.md).
 - [Guide: installation, management, upgrades and removal](SERVER_GUIDE_EN.md).
 - [Administration API](ADMIN_API.md).
-- [Download packages and SHA256SUMS](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.9.0).
+- [Download packages and SHA256SUMS](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.9.1).
 
-This is a prerelease. amd64 was tested with the unmodified Linux client; ARM64 uses QEMU. Android and native ARM hardware acceptance remain pending. Installation does not automatically start the service.
+Version 0.9.1 is a prerelease rebuilt with Rust 1.100.0. The unmodified Linux client was tested with 0.9.0. ARM64 tests use QEMU. Android and native ARM hardware acceptance remain pending. Installation does not automatically start the service.

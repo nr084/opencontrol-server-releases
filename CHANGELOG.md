@@ -2,6 +2,10 @@
 
 [Русский](CHANGELOG_RU.md) | **English**
 
+## 0.9.1 — 2026-11-15
+
+- Rebuild Ubuntu amd64 and arm64 packages with stable Rust 1.100.0. Protocol Library remains pinned to 0.9.0 and administration API to v1.
+
 ## 0.9.0 — 2026-10-26
 
 - Pin Protocol Library =0.9.0 / cacf1a738e5013922ca9678d529d014fffc22d11 with the legacy build feature and runtime LegacyPolicy.

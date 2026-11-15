@@ -1,12 +1,12 @@
-# OpenControl Server 0.9.0: руководство администратора
+# OpenControl Server 0.9.1: руководство администратора
 
-**Русский** | [English](USAGE_EN.md)
+**Русский** | [English](SERVER_GUIDE_EN.md)
 
 IPv4 VPN-сервер для Ubuntu Server 26.04 LTS, amd64 и arm64. Реализует совместимость с проверенными клиентами Kerio Control VPN.
 
 **OpenControl — независимый проект. Он не является продуктом Kerio / GFI, не связан с этими компаниями, не спонсируется, не одобрен и не поддерживается ими.** Названия используются только для обозначения совместимости; права на торговые марки принадлежат их владельцам. Фирменные клиентские бинарники не распространяются.
 
-Версия 0.9.0 опубликована как prerelease. На Ubuntu amd64 проверен неизменённый Kerio Control VPN Client 9.6.1 (9306-p1) для Linux. ARM64 сборки и затронутые тесты проверены под QEMU; проверка на физическом ARM-сервере и Android пока не выполнена. Совместимость с другими версиями клиентов не гарантируется.
+Версия 0.9.1 пересобрана на Rust 1.100.0 и опубликована как prerelease. Для 0.9.0 на Ubuntu amd64 проверен неизменённый Kerio Control VPN Client 9.6.1 (9306-p1) для Linux. ARM64 сборки и затронутые тесты проверены под QEMU; проверка на физическом ARM-сервере и Android пока не выполнена. Совместимость с другими версиями клиентов не гарантируется.
 
 ## Возможности
 
@@ -26,18 +26,18 @@ IPv4 VPN-сервер для Ubuntu Server 26.04 LTS, amd64 и arm64. Реали
 
 Нужен Ubuntu Server 26.04 с systemd, `/dev/net/tun` и возможностью управлять сетью/nftables. В контейнере доступ к TUN и сетевые полномочия предоставляет оператор.
 
-Скачайте `.deb` нужной архитектуры и `SHA256SUMS` из [релиза 0.9.0](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.9.0). Либо выполните:
+Скачайте `.deb` нужной архитектуры и `SHA256SUMS` из [релиза 0.9.1](https://github.com/nr084/opencontrol-server-releases/releases/tag/server-v0.9.1). Либо выполните:
 
 ```sh
 sudo apt update
 sudo apt install ca-certificates curl
 arch=$(dpkg --print-architecture)
 case "$arch" in amd64|arm64) ;; *) echo 'Unsupported architecture'; exit 1 ;; esac
-base=https://github.com/nr084/opencontrol-server-releases/releases/download/server-v0.9.0
-curl -fLO "$base/opencontrol-server_0.9.0_${arch}.deb"
+base=https://github.com/nr084/opencontrol-server-releases/releases/download/server-v0.9.1
+curl -fLO "$base/opencontrol-server_0.9.1_${arch}.deb"
 curl -fLO "$base/SHA256SUMS"
-grep "  opencontrol-server_0.9.0_${arch}.deb$" SHA256SUMS | sha256sum -c -
-sudo apt install "./opencontrol-server_0.9.0_${arch}.deb"
+grep "  opencontrol-server_0.9.1_${arch}.deb$" SHA256SUMS | sha256sum -c -
+sudo apt install "./opencontrol-server_0.9.1_${arch}.deb"
 ```
 
 Продолжайте только после успешной проверки SHA256. Команды ниже относятся к установленному серверу. Установка создаёт служебные учётные записи, конфигурацию и самоподписанный сертификат, если сертификата и ключа ещё нет. Служба автоматически не запускается; forwarding не включается.
@@ -254,7 +254,7 @@ sudo rm -rf -- /etc/opencontrol /var/lib/opencontrol
 5. Если сессия есть, но трафика нет: forwarding, DNS, firewall FORWARD, NAT/return routes и пользовательские allowed routes.
 6. Если settings сохранены, но не применены: сравните saved/applied revision, readiness и необходимость restart.
 
-Подробнее: [DIAGNOSTICS.md](https://github.com/nr084/opencontrol-server/blob/v0.9.0/server/DIAGNOSTICS.md), [SECURITY.md](https://github.com/nr084/opencontrol-server/blob/v0.9.0/server/SECURITY.md), [CHANGELOG.md](https://github.com/nr084/opencontrol-server/blob/v0.9.0/server/CHANGELOG.md).
+Подробнее: [DIAGNOSTICS.md](https://github.com/nr084/opencontrol-server/blob/v0.9.1/server/DIAGNOSTICS.md), [SECURITY.md](https://github.com/nr084/opencontrol-server/blob/v0.9.1/server/SECURITY.md), [CHANGELOG.md](https://github.com/nr084/opencontrol-server/blob/v0.9.1/server/CHANGELOG.md).
 
 ## ОС подключённого клиента (0.2.1)
 

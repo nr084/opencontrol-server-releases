@@ -1,4 +1,4 @@
-# Локальный административный API v1 — OpenControl Server 0.9.0
+# Локальный административный API v1 — OpenControl Server 0.9.1
 
 **Русский** | [English](ADMIN_API.md)
 
